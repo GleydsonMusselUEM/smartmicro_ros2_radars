@@ -1,7 +1,60 @@
 {
     "clients": [
         {
-            "can_network_id": 0
+            "can_network_id": 0,
+            "client_id": 100,
+            "data_serialization_type": "port_based",
+            "dev_id": 4,
+            "instruction_serialization_type": "port_based",
+            "ip": "192.168.11.11",
+            "link_type": "eth",
+            "port": 55555,
+            "user_interface_major_v": 1,
+            "user_interface_minor_v": 1,
+            "user_interface_name": "umrr11_t132_automotive",
+            "user_interface_patch_v": 2
+        },
+        {
+            "can_network_id": 0,
+            "client_id": 200,
+            "data_serialization_type": "port_based",
+            "dev_id": 4,
+            "instruction_serialization_type": "port_based",
+            "ip": "172.22.10.102",
+            "link_type": "eth",
+            "port": 55555,
+            "user_interface_major_v": 1,
+            "user_interface_minor_v": 2,
+            "user_interface_name": "umrr96_t153_automotive",
+            "user_interface_patch_v": 2
+        },
+        {
+            "can_network_id": 0,
+            "client_id": 300,
+            "data_serialization_type": "port_based",
+            "dev_id": 4,
+            "instruction_serialization_type": "port_based",
+            "ip": "172.22.10.103",
+            "link_type": "eth",
+            "port": 55555,
+            "user_interface_major_v": 2,
+            "user_interface_minor_v": 1,
+            "user_interface_name": "umrr9f_t169_automotive",
+            "user_interface_patch_v": 1
+        },
+        {
+            "can_network_id": 0,
+            "client_id": 400,
+            "data_serialization_type": "port_based",
+            "dev_id": 4,
+            "instruction_serialization_type": "port_based",
+            "ip": "172.22.10.104",
+            "link_type": "eth",
+            "port": 55555,
+            "user_interface_major_v": 1,
+            "user_interface_minor_v": 5,
+            "user_interface_name": "umrr9d_t152_automotive",
+            "user_interface_patch_v": 0
         }
     ],
     "name": "Client Routing Table",

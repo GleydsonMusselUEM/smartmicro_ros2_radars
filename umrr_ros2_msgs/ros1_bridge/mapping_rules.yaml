@@ -1,11 +1,11 @@
 -
-  ros1_package_name: umrr_ros1_msgs
+  ros1_package_name: autonav_msgs
   ros1_message_name: PortTargetHeader
   ros2_package_name: umrr_ros2_msgs
   ros2_message_name: PortTargetHeader
 
 -
-  ros1_package_name: umrr_ros1_msgs
+  ros1_package_name: autonav_msgs
   ros1_message_name: PortObjectHeader
   ros2_package_name: umrr_ros2_msgs
   ros2_message_name: PortObjectHeader
