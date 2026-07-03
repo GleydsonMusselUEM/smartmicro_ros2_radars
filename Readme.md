@@ -326,3 +326,123 @@ This project is a joint effort between [smartmicro](https://www.smartmicro.com/)
 
 ## License
 Licensed under the [Apache 2.0 License](LICENSE).
+
+---
+
+## Tutorial: Configuracao do arquivo radar.params.template.yaml
+
+### Localizacao do arquivo
+
+```
+umrr_ros2_driver/param/radar.params.template.yaml
+```
+
+Este arquivo e o ponto de entrada para configurar adapters (interfaces de rede do host) e sensores (radares fisicos). Copie-o para `radar.params.yaml` e edite antes de executar o driver.
+
+---
+
+### Secao `adapters`
+
+Um adapter representa uma interface de rede fisica do computador host, nao o sensor. Para multiplos radares Ethernet conectados via switch, **um unico adapter basta**.
+
+```yaml
+adapters:
+  adapter_0:
+    hw_type: "eth"       # Tipo de conexao: "eth" para Ethernet, "can" para CAN
+    hw_dev_id: 4         # ID unico do adapter; os sensores usam este mesmo ID em dev_id
+    hw_iface_name: "eth0" # Nome da interface de rede no Linux (ver: ip link)
+    port: 55555          # Porta UDP para receber pacotes (padrao: 55555)
+```
+
+| Parametro | Descricao |
+|-----------|-----------|
+| `hw_type` | `"eth"` para Ethernet, `"can"` para CAN |
+| `hw_dev_id` | Identificador numerico do adapter; deve coincidir com o `dev_id` de cada sensor associado |
+| `hw_iface_name` | Nome da interface de rede Linux (ex: `eth0`, `enp3s0`). Verificar com `ip link` |
+| `port` | Porta UDP de recebimento. Padrao: `55555`. Igual em adapter e sensores |
+
+Para CAN, substituir `port` por `baudrate: 500000`.
+
+---
+
+### `master_inst_serial_type` e `master_data_serial_type`
+
+Definem o protocolo de serializacao de instrucoes e dados do master. Para conexoes exclusivamente Ethernet, usar `port_based` em ambos:
+
+```yaml
+master_inst_serial_type: port_based
+master_data_serial_type: port_based
+```
+
+Se houver mistura de CAN e Ethernet na mesma configuracao, usar `can_based`.
+
+---
+
+### Secao `sensors`
+
+Cada sensor e identificado por uma chave sequencial `sensor_0`, `sensor_1`, etc. A lista deve comecar em `sensor_0`. Maximo de 10 sensores.
+
+```yaml
+sensors:
+  sensor_0:
+    link_type: "eth"                    # "eth" ou "can"
+    pub_type: "target"                  # Tipo de publicacao: "target" para point cloud de alvos
+    model: "umrra1_v2_0_0"             # Modelo do sensor (ver tabela abaixo)
+    dev_id: 4                           # DEVE ser igual ao hw_dev_id do adapter correspondente
+    id: 0                               # ID unico do cliente/sensor, inteiro nao-zero (exceto id: 0 e valido)
+    frame_id: "radar_FL"                # Frame ID publicado nas mensagens ROS
+    history_size: 10                    # Tamanho do buffer do publisher
+    ip: "192.168.1.60"                  # IP fixo configurado no hardware do sensor (unico por sensor)
+    inst_type: "port_based"             # Serializacao de instrucoes (Ethernet: port_based)
+    data_type: "port_based"             # Serializacao de dados (Ethernet: port_based)
+    port: 55555                         # Porta UDP (igual ao adapter; padrao: 55555)
+    uifname: "umrra1_t166_b_automotive" # Nome da user interface do sensor
+    uifmajorv: 2                        # Versao major da user interface
+    uifminorv: 0                        # Versao minor da user interface
+    uifpatchv: 0                        # Versao patch da user interface
+```
+
+**Regras obrigatorias:**
+
+- `ip`: deve ser unico por sensor e corresponder ao IP configurado no hardware
+- `id`: deve ser unico entre todos os sensores
+- `dev_id`: deve ser identico ao `hw_dev_id` do adapter ao qual o sensor esta conectado
+- `port`: deve ser `55555` em todos os sensores (mesmo valor do adapter)
+- `inst_type` e `data_type`: usar `port_based` para Ethernet
+
+---
+
+### Tabela de modelos suportados (sensores do projeto)
+
+Apenas modelos com `link_type: "eth"` (port-based) relevantes para o projeto:
+
+| Hardware | `model` | `uifname` | Versoes suportadas |
+|----------|---------|-----------|-------------------|
+| DRVEGRD 166 (UMRRA1 Type 166) | `umrra1_v2_0_0` | `umrra1_t166_b_automotive` | 1.0.0, **2.0.0** |
+| DRVEGRD 152 (UMRR9D Type 152) | `umrr9d_v1_5_0` | `umrr9d_t152_automotive` | 1.0.2, 1.0.3, 1.2.2, 1.4.1, **1.5.0** |
+| DRVEGRD 169 (UMRR9F Type 169) | `umrr9f_v2_4_1` | `umrr9f_t169_automotive` | 1.1.1, 2.0.0, 2.1.1, 2.2.0, 2.2.1, **2.4.1**, 3.0.0 |
+
+A versao em negrito e a mais recente disponivel nas user interfaces do driver. Os valores de `uifmajorv`, `uifminorv` e `uifpatchv` correspondem aos componentes da versao escolhida (ex: v2.4.1 -> `uifmajorv: 2`, `uifminorv: 4`, `uifpatchv: 1`).
+
+Para ver todas as user interfaces disponiveis no driver instalado:
+
+```bash
+ls umrr_ros2_driver/smartmicro/user_interfaces/
+```
+
+---
+
+### Nota sobre IP fixo dos sensores
+
+Cada radar precisa ter seu IP fixo configurado diretamente no hardware antes do deploy. O IP definido em `ip:` no arquivo de parametros deve corresponder ao IP real do sensor na rede.
+
+Para configurar o IP de um sensor via servico ROS2 (requer que o sensor esteja acessivel na rede):
+
+```bash
+# Converter o IP desejado para decimal e enviar via servico
+# Exemplo: 192.168.1.60 -> 3232235836
+ros2 service call /smart_radar/set_ip_address umrr_ros2_msgs/srv/SetIp \
+  "{value_ip: 3232235836, sensor_id: <id_atual_do_sensor>}"
+```
+
+Apos alterar o IP, reiniciar o sensor fisicamente e atualizar o arquivo de parametros antes de recompilar o driver.
