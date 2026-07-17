@@ -3,6 +3,9 @@
     adapters:
       adapter_0:
         hw_type: "eth" # Tipo, can ou eth
+        # NUNCA use 1: o driver usa hw_dev_id==1 como sentinela de "adapter nao
+        # configurado" (kDefaultHwDevId em smartmicro_radar_node.cpp), o que faz
+        # o parsing parar aqui e lancar "At least one adapter must be configured."
         hw_dev_id: 4 # Id do adapatador no qual os radares estão ligados
         hw_iface_name: "eth0" # Interface no Linux
         port: 55555
@@ -29,7 +32,10 @@
         # Adapter id to which sensor is connected (DEVE SER IGUAL PARA TODOS OS RADARES LIGADOS NO MESMO SWITCH)
         dev_id: 4
         # The client_id of the sensor/source, must be a unique integer.
-        id: 0
+        # NUNCA use 0: o driver usa id==0 como sentinela de "sensor nao configurado"
+        # (ver smartmicro_radar_node.cpp, read_sensor_params_if_possible), o que faz
+        # o parsing parar no sensor_0 e lancar "At least one sensor must be configured."
+        id: 1
         # The frame_id to be set to the published messages.
         frame_id: "radar_FL"
         # Specify the history size.
@@ -59,7 +65,7 @@
         # Adapter id to which sensor is connected (DEVE SER IGUAL PARA TODOS OS RADARES LIGADOS NO MESMO SWITCH)
         dev_id: 4
         # The client_id of the sensor/source, must be a unique integer.
-        id: 1
+        id: 2
         # The frame_id to be set to the published messages.
         frame_id: "radar_FR"
         # Specify the history size.
@@ -89,7 +95,7 @@
         # Adapter id to which sensor is connected (DEVE SER IGUAL PARA TODOS OS RADARES LIGADOS NO MESMO SWITCH)
         dev_id: 4
         # The client_id of the sensor/source, must be a unique integer.
-        id: 5
+        id: 3
         # The frame_id to be set to the published messages.
         frame_id: "radar_R"
         # Specify the history size.
