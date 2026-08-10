@@ -48,7 +48,26 @@ endif()
 
 ament_auto_find_build_dependencies()
 
-set(SMARTMICRO_LIB_DIR "lib-linux-x86_64-gcc_9")
+# Nome da pasta de libs da Smart Access API varia por arquitetura/gcc (ex:
+# lib-linux-x86_64-gcc_9, lib-linux-armv8-gcc_9). Mantenha em sincronia com a
+# mesma deteccao em compile.sh e build_bridge.sh.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64)$")
+    set(SMARTMICRO_ARCH "x86_64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+    set(SMARTMICRO_ARCH "armv8")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv7")
+    set(SMARTMICRO_ARCH "armv7hf")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i386|i686|x86)$")
+    set(SMARTMICRO_ARCH "x86")
+else()
+    message(FATAL_ERROR "umrr_ros2_driver: arquitetura nao suportada pela Smart Access API: ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+string(REPLACE "." ";" SMARTMICRO_GCC_VERSION_LIST "${CMAKE_CXX_COMPILER_VERSION}")
+list(GET SMARTMICRO_GCC_VERSION_LIST 0 SMARTMICRO_GCC_MAJOR)
+
+set(SMARTMICRO_LIB_DIR "lib-linux-${SMARTMICRO_ARCH}-gcc_${SMARTMICRO_GCC_MAJOR}")
+message(STATUS "umrr_ros2_driver: usando Smart Access API em smartmicro/${SMARTMICRO_LIB_DIR}")
 
 # specify the path to search for the libraries
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/smartmicro/${SMARTMICRO_LIB_DIR})
@@ -123,7 +142,7 @@ smartmicro/include/umrra4_mse_v2_1_0
 smartmicro/include/umrra1_t166_b_automotive_v1_0_0
 smartmicro/include/umrra1_t166_b_automotive_v2_0_0)
 
-# link smart_access_lib-linux-x86_64-gcc_9 to the node
+# link smart_access (${SMARTMICRO_LIB_DIR}) to the node
 target_link_libraries(smartmicro_radar_node
     smart_access
     nlohmann_json::nlohmann_json
